@@ -1,0 +1,72 @@
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Local secrets and configuration ###
+.env
+.env.*
+!.env.example
+.envrc
+application-local.yaml
+application-local.yml
+application.*.local.yaml
+application.*.local.yml
+secrets/
+.aws/
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+.pgpass
+.pg_service.conf
+
+### Local PostgreSQL data and backups ###
+/postgres-data/
+/pgdata/
+pg_log/
+*.dump
+*.backup
+*.bak
+*.sql.gz
+*.db
+*.sqlite
+*.sqlite3
+
+### Runtime files ###
+*.log
+logs/
+.DS_Store
+
+### Local agent skills ###
+/skills/
