@@ -1,4 +1,4 @@
-package com.crypto.binancearb.client.dto;
+package com.crypto.binancearb.ingestor.dto;
 
 import java.util.List;
 

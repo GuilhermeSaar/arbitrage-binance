@@ -1,7 +1,8 @@
-package com.crypto.binancearb.client;
+package com.crypto.binancearb.ingestor.client;
 
-import com.crypto.binancearb.client.dto.MarketTicker;
-import com.crypto.binancearb.client.dto.SubscribeRequest;
+import com.crypto.binancearb.ingestor.dto.SubscribeRequest;
+import com.crypto.binancearb.ingestor.model.MarketTicker;
+import com.crypto.binancearb.ingestor.store.OrderBookCache;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class MarketDataWebSocketClient {
     private final ObjectMapper mapper;
     private OkHttpClient client;
     private WebSocket webSocket;
+    private final OrderBookCache cache;
 
     @PostConstruct
     public void init() {
@@ -61,28 +63,39 @@ public class MarketDataWebSocketClient {
 
             System.out.println("conectado com sucesso");
 
-            List<String> assets = List.of(
-                    "btcusdt@bookTicker",
-                    "avaxusdt@bookTicker",
-                    "avaxbtc@bookTicker"
-
+            var request = new SubscribeRequest(
+                    "SUBSCRIBE",
+                    List.of(
+                            "btcusdt@bookTicker",
+                            "avaxusdt@bookTicker",
+                            "avaxbtc@bookTicker"
+                    ), 1
             );
 
-            var request = new SubscribeRequest("SUBSCRIBE", assets, 1);
-
             try {
-                String jsonRequest = mapper.writeValueAsString(request);
-                webSocket.send(jsonRequest);
-
-                System.out.println("Inscricao enviada: " + jsonRequest);
-            } catch (Exception e) {
-                System.err.println(e.getMessage());
+                String json = mapper.writeValueAsString(request);
+                webSocket.send(json);
+                System.out.println("Subscribe enviado " + json);
+            }catch (Exception e){
+                throw new RuntimeException("Erro ao serializar subscribe request", e);
             }
         }
 
         @Override
         public void onMessage(WebSocket webSocket, String text) {
 
+            try {
+                if (text.contains("\"result\":null")) {
+                    return;
+                }
+
+                var ticker = mapper.readValue(text, MarketTicker.class);
+                cache.update(ticker);
+
+            } catch (Exception e) {
+                System.err.println("Erro ao processar mensagem: " + text);
+                e.printStackTrace();
+            }
             System.out.println("[Binance Dados] " + text);
         }
 
@@ -95,13 +108,6 @@ public class MarketDataWebSocketClient {
         public void onFailure(WebSocket webSocket, Throwable t, Response response) {
 
             System.out.println("Tentando reconectar");
-
-            try {
-                Thread.sleep(5000);
-                connect();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
         }
     }
 }
